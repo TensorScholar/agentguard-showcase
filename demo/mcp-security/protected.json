@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "customer-operations": {
+      "command": "agentguard",
+      "args": [
+        "mcp-proxy",
+        "--server-id",
+        "customer-operations",
+        "--",
+        "python",
+        "customer_operations_server.py"
+      ]
+    }
+  }
+}
