@@ -137,19 +137,23 @@ Previously consumed authorization decisions are invalidated on protected paths; 
 
 ## Evidence Integrity
 
-Every protected execution produces verifiable evidence:
+On protected paths, AgentGuard can record verifiable evidence:
 
 - decision records
 - execution results
 - integrity metadata
 
+Core CLI commands include `evidence-build` and `evidence-verify`. This showcase does not treat evidence packaging as a separate attack demo.
+
 ---
 
 # Attack Demonstrations
 
+These demonstrations are executable in this repository. Results come from AgentGuard `0.2.0rc3`, not from mocked PASS output.
+
 ## 1. Argument Mutation Attack
 
-Scenario:
+[demo/refund-agent](demo/refund-agent)
 
 A support agent is authorized to issue:
 
@@ -157,61 +161,55 @@ A support agent is authorized to issue:
 Refund: $85
 ```
 
-An attacker attempts to mutate execution:
+After authorization, execution arguments are changed to:
 
 ```text
 Refund: $850
 ```
 
-On the protected path, AgentGuard intercepts the action with:
+AgentGuard rejects the mutated intent with:
 
 ```text
 execution.arguments_digest_mismatch
 ```
 
-before protected external execution dispatch occurs.
+This is execution-authority verification. The demo does not contact a payment processor.
 
 ---
 
-## 2. Credential Scope Inflation
+## 2. Replay Attack
 
-A credential attempts to access permissions beyond the authorized boundary.
+[demo/replay-prevention](demo/replay-prevention)
 
-AgentGuard rejects the invocation with:
+A previously consumed decision receipt is presented again on the protected execution path.
 
-```text
-credential.scope_exceeds_decision
-```
-
----
-
-## 3. Replay Attack
-
-A previously approved action receipt is reused.
-
-AgentGuard prevents execution and rejects with:
+AgentGuard rejects reuse with:
 
 ```text
 decision_receipt.replayed
 ```
 
+`verify-execution` is a non-consuming preflight. Replay is enforced when the protected path claims the receipt.
+
 ---
 
-# MCP Security
+## 3. MCP Unmediated Route
 
-Model Context Protocol (MCP) introduces new execution paths for AI agents.
+[demo/mcp-security](demo/mcp-security)
 
-AgentGuard posture audits detect configurations where tools can bypass protected execution boundaries.
+AgentGuard posture audits detect client configurations where tools can bypass a protected proxy, including a parallel direct route to the same downstream.
 
-Example:
+Observed reasons include:
 
 ```text
-Agent
-|
-+---- Protected MCP Gateway
-|
-+---- Direct Unsafe Tool Route ❌
+mcp.agentguard_proxy_enforced
+mcp.direct_connection_bypasses_agentguard
+mcp.parallel_direct_bypass
 ```
+
+This audits supplied MCP configuration. It does not make arbitrary MCP servers invulnerable.
+
+Credential scope inflation (`credential.scope_exceeds_decision`) is validated in AgentGuard core (`agentguard demo`) and is not a separate showcase runner.
 
 ---
 
@@ -248,44 +246,51 @@ Evidence
 
 The authorization path remains deterministic and auditable.
 
+See [docs/architecture.md](docs/architecture.md), [docs/threat-model.md](docs/threat-model.md), [docs/security-properties.md](docs/security-properties.md), and [docs/design-decisions.md](docs/design-decisions.md).
+
 ---
 
 # Core Implementation
 
-The complete implementation is maintained in the primary repository:
+The complete implementation is maintained in the primary repository (private):
 
 - [AgentGuard Core Repository](https://github.com/TensorScholar/agentguard)
+
+This showcase is a **consumer** of that core. It does not vendor the engine.
 
 ---
 
 # Demo
 
-The showcase demonstrates:
+Requires a local AgentGuard install (sibling checkout or `AGENTGUARD`). PyPI `pip install agentguard` is not assumed.
 
-- refund agent protection
-- MCP security boundaries
-- replay prevention
-- credential scope enforcement
+```bash
+./scripts/bootstrap.sh --install   # optional, sibling core required
+./run_demo.sh
+```
 
-See:
+| Demo | Observable |
+|---|---|
+| [demo/refund-agent](demo/refund-agent) | `execution.arguments_digest_mismatch` |
+| [demo/replay-prevention](demo/replay-prevention) | `decision_receipt.replayed` |
+| [demo/mcp-security](demo/mcp-security) | MCP bypass reasons, non-zero exit |
 
-- `demo/refund-agent`
-- `demo/replay-prevention`
-- `demo/mcp-security`
+Setup and expected results: [docs/demo-guide.md](docs/demo-guide.md).
 
 ---
 
 # Project Status
 
-Current validated capabilities:
+Engineering-validated against AgentGuard `0.2.0rc3`:
 
-✅ Runtime authorization  
-✅ Credential binding  
-✅ Execution verification  
-✅ MCP protection  
-✅ Replay prevention  
-✅ Evidence generation  
-✅ Production-oriented validation workflow  
+- Runtime authorization
+- Credential binding
+- Execution verification
+- Replay prevention on the protected path
+- MCP posture / bypass detection
+- Evidence generation in core CLI
+
+This is not a production-certification claim. 
 
 ---
 
@@ -295,7 +300,4 @@ AgentGuard follows one principle:
 
 > AI agents can be intelligent, but security boundaries must be deterministic.
 
-
-Probabilistic intelligence + Deterministic enforcement
-
-Safer autonomous systems
+Probabilistic intelligence still requires deterministic enforcement at the moment an action would take effect.
