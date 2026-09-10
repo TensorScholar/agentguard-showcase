@@ -41,14 +41,14 @@ agentguard_missing() {
   cat >&2 <<'EOF'
 AgentGuard CLI was not found.
 
-This showcase is a consumer of the private AgentGuard core. It does not
-vendor the authorization engine, cryptography, or ledger implementation.
+This reference repository provides demonstration harnesses for the AgentGuard core.
+It does not vendor the authorization engine, cryptography, or ledger implementation.
 
 Expected local evaluator layout:
 
   <parent>/
     agentguard/              # core checkout with a working install
-    agentguard-showcase/     # this repository
+    agentguard-reference/    # this repository (or any folder name)
 
 Then either:
 

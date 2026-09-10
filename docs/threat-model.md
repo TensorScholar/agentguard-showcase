@@ -1,6 +1,6 @@
 # Threat model
 
-This document describes threats the **current AgentGuard showcase can demonstrate**, and risks that remain out of scope. Claims are bounded to traffic and configuration that actually enter AgentGuard.
+This document describes threats the **current AgentGuard reference repository can demonstrate**, and risks that remain out of scope. Claims are bounded to traffic and configuration that actually enter AgentGuard.
 
 ## In scope: demonstrated on protected paths
 
@@ -10,7 +10,7 @@ An $85 refund is authorized. Tool arguments are later changed to $850.
 
 - Control: canonical `arguments_digest` on the decision receipt, rechecked at execution verification
 - Observable: `execution.arguments_digest_mismatch`
-- Demo: [`demo/refund-agent`](../demo/refund-agent)
+- Demo: [`demos/refund-agent`](../demos/refund-agent)
 
 ### Decision-receipt replay
 
@@ -18,7 +18,7 @@ A consumed authorization is presented again on the protected execution path.
 
 - Control: durable nonce reservation in AgentGuard state
 - Observable: `decision_receipt.replayed`
-- Demo: [`demo/replay-prevention`](../demo/replay-prevention)
+- Demo: [`demos/replay-prevention`](../demos/replay-prevention)
 
 ### MCP unmediated / parallel bypass configuration
 
@@ -26,11 +26,11 @@ A client config includes a direct launch of the same downstream server that a pr
 
 - Control: `mcp-posture --fail-on-bypass`
 - Observables: `mcp.direct_connection_bypasses_agentguard`, `mcp.parallel_direct_bypass`, non-zero exit
-- Demo: [`demo/mcp-security`](../demo/mcp-security)
+- Demo: [`demos/mcp-security`](../demos/mcp-security)
 
 ### Credential scope exceeding decision authority
 
-Core AgentGuard rejects a grant whose scopes exceed the signed ceiling (`credential.scope_exceeds_decision`). That path is exercised by `agentguard demo` in the core package. It is **not** a separate showcase runner.
+Core AgentGuard rejects a grant whose scopes exceed the signed ceiling (`credential.scope_exceeds_decision`). That path is exercised by `agentguard demo` in the core package. It is **not** a separate demonstration runner in this repository.
 
 ## Trust boundary
 
@@ -42,7 +42,7 @@ Assumed:    OS, signing keys, adapter identity labels, downstream provider hones
 
 ## Out of scope
 
-These are not solved by installing or running this showcase:
+These are not solved by installing or running this reference repository:
 
 | Risk | Why it is out of scope |
 |---|---|

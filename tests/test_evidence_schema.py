@@ -1,7 +1,7 @@
 """Repo-level evidence-schema tests (run from the repository root).
 
 Guards the public contract: claims ledger shape, maturity vocabulary,
-and experiment results schema. These run in CI via `make verify`.
+and experiment results schema. These run locally via `make verify` or `pytest`.
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ MATURITY = {"L0", "L1", "L2", "L3", "Conceptual"}
 
 # results.json locations relative to repo root: (path, allow_L3)
 RESULT_FILES = {
+    "agentguard-reference": [("reference-kernel/experiments/results.json", False)],
     "agentguard-showcase": [("reference-kernel/experiments/results.json", False)],
     "proofdiff-showcase": [("experiments/results.json", True)],
     "permitdiff-showcase": [("experiments/results.json", False)],
@@ -22,8 +23,15 @@ RESULT_FILES = {
 }
 
 REQUIRED_CLAIM_FIELDS = {"id", "statement", "evidence_maturity", "scope", "falsification_condition"}
-REQUIRED_RESULT_FIELDS = {"scenario", "configuration", "expected_behavior",
-                          "observed_behavior", "evidence_level", "limitations", "pass"}
+REQUIRED_RESULT_FIELDS = {
+    "scenario",
+    "configuration",
+    "expected_behavior",
+    "observed_behavior",
+    "evidence_level",
+    "limitations",
+    "pass",
+}
 
 
 def repo_name() -> str:
@@ -53,7 +61,13 @@ def test_no_unexpected_L3():
 
 def test_results_schema():
     name = repo_name()
-    for rel, _ in RESULT_FILES.get(name, []):
+    assert name in RESULT_FILES, (
+        f"Repository directory name {name!r} not configured in RESULT_FILES. "
+        f"Configured repositories: {sorted(RESULT_FILES.keys())}"
+    )
+    targets = RESULT_FILES[name]
+    assert targets, f"No target result files configured for repository {name!r}"
+    for rel, _ in targets:
         payload = json.loads((ROOT / rel).read_text(encoding="utf-8"))
         assert payload.get("results"), f"{rel}: empty results"
         for r in payload["results"]:

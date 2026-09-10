@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run the three AgentGuard showcase demonstrations and print a summary.
+# Run the three AgentGuard demonstrations and print a summary.
 # PASS is printed only when the underlying real demo exited 0.
 
 set -euo pipefail
@@ -13,9 +13,9 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 Usage: ./run_demo.sh [--keep-workspace]
 
 Runs:
-  1. demo/refund-agent
-  2. demo/replay-prevention
-  3. demo/mcp-security
+  1. demos/refund-agent
+  2. demos/replay-prevention
+  3. demos/mcp-security
 
 PASS is printed only when that demo exited 0 after checking real AgentGuard output.
 EOF
@@ -42,11 +42,11 @@ REPLAY_STATUS=0
 MCP_STATUS=0
 
 set +e
-run_one "Refund mutation" "${SCRIPT_DIR}/demo/refund-agent/run.sh" "$@"
+run_one "Refund mutation" "${SCRIPT_DIR}/demos/refund-agent/run.sh" "$@"
 REFUND_STATUS=$?
-run_one "Replay prevention" "${SCRIPT_DIR}/demo/replay-prevention/run.sh" "$@"
+run_one "Replay prevention" "${SCRIPT_DIR}/demos/replay-prevention/run.sh" "$@"
 REPLAY_STATUS=$?
-run_one "MCP bypass detection" "${SCRIPT_DIR}/demo/mcp-security/run.sh" "$@"
+run_one "MCP bypass detection" "${SCRIPT_DIR}/demos/mcp-security/run.sh" "$@"
 MCP_STATUS=$?
 set -e
 
@@ -66,7 +66,7 @@ else
   overall_label="$(fail)"
 fi
 
-printf '\n%sAgentGuard Showcase%s\n\n' "${BOLD}" "${RESET}"
+printf '\n%sAgentGuard Reference Demos%s\n\n' "${BOLD}" "${RESET}"
 printf 'Refund mutation         %s\n' "${refund_label}"
 printf 'Replay prevention       %s\n' "${replay_label}"
 printf 'MCP bypass detection    %s\n' "${mcp_label}"
