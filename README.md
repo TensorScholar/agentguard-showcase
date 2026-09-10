@@ -20,9 +20,16 @@ An agent can produce a valid-looking action while:
 - previously approved actions are replayed,
 - external execution diverges from authorization.
 
-AgentGuard introduces a deterministic runtime authorization layer that enforces:
+AgentGuard demonstrates a deterministic execution-integrity boundary that binds authorized intent to bounded credential authority and admitted dispatch:
 
-**Authorized action = Credential-bound action = Executed action**
+```text
+Authorized Intent
+    -> Bounded Credential Authority
+    -> Admitted Dispatch
+    -> Evidence-Bound Outcome
+```
+
+The protected boundary verifies that the dispatched normalized action remains bound to the authorization decision. It does not independently prove the final provider-side business effect. The public reference kernel models this boundary for educational inspection; it does not prove current core behavior.
 
 ---
 
@@ -115,17 +122,16 @@ It must match:
 
 ## Execution-Time Verification
 
-On protected execution paths, AgentGuard verifies that:
+On protected execution paths, AgentGuard verifies that the dispatched normalized action matches the authorization decision:
 
 ```text
-Requested Action
-==
-Authorized Action
-==
-Executed Action
+Authorized Intent
+    -> Bounded Credential Authority
+    -> Admitted Dispatch
+    -> Evidence-Bound Outcome
 ```
 
-before dispatching external execution.
+before dispatching external execution. The protected boundary verifies that the dispatched normalized action remains bound to the authorization decision; it does not independently prove the final provider-side business effect.
 
 ---
 

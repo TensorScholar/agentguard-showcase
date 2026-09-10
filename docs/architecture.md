@@ -5,7 +5,10 @@ AgentGuard is runtime authorization infrastructure for AI agents. It sits betwee
 The invariant is:
 
 ```text
-Authorized action == Credential-bound action == Executed action
+Authorized Intent
+    -> Bounded Credential Authority
+    -> Admitted Dispatch
+    -> Evidence-Bound Outcome
 ```
 
 Model output is treated as a proposal, not as an authorization boundary.

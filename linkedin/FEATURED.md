@@ -8,7 +8,7 @@ Runtime execution-integrity boundary that treats the model as an untrusted propo
 
 **Suggested post structure**  
 1. Operational failure mode (authorize $85, execute $850).  
-2. The invariant (authorized = credentialed = executed).  
+2. The invariant chain (authorized intent -> bounded credentials -> admitted dispatch).
 3. Retained evidence + maturity level.  
 4. Explicit non-claims.  
 5. Link to the reference repository and reference kernel.
