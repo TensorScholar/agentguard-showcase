@@ -1,4 +1,4 @@
-# Changelog — AgentGuard showcase
+# Changelog — AgentGuard reference repository
 
 ## v4 (2026-09-07) — standalone public repository
 
@@ -11,7 +11,7 @@
 - Thread-safe in-memory replay store (+ concurrency test). Crash safety and
   multi-process use remain explicitly out of scope.
 - Docs: attack taxonomy, rejected designs, operational lessons, tradeoffs.
-- Standalone repo layout: `make verify`, CI workflow, LICENSE, examples.
+- Standalone repo layout: `make verify`, local verification harness, LICENSE, examples.
 
 Evidence: reference-kernel results are L2 (publicly reproducible).
 Private-core claims remain L1. No L3 claimed. No production users claimed.

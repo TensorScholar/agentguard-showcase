@@ -1,7 +1,7 @@
 """Repo-level evidence-schema tests (run from the repository root).
 
 Guards the public contract: claims ledger shape, maturity vocabulary,
-and experiment results schema. These run in CI via `make verify`.
+and experiment results schema. These run locally via `make verify` or `pytest`.
 """
 
 from __future__ import annotations
@@ -13,21 +13,19 @@ ROOT = Path(__file__).resolve().parents[1]
 
 MATURITY = {"L0", "L1", "L2", "L3", "Conceptual"}
 
-# results.json locations relative to repo root: (path, allow_L3)
-RESULT_FILES = {
-    "agentguard-showcase": [("reference-kernel/experiments/results.json", False)],
-    "proofdiff-showcase": [("experiments/results.json", True)],
-    "permitdiff-showcase": [("experiments/results.json", False)],
-    "inferenceledger-showcase": [("experiments/results.json", False)],
-}
+# Result target files relative to repo root: (path, allow_L3)
+RESULT_TARGETS = [("reference-kernel/experiments/results.json", False)]
 
 REQUIRED_CLAIM_FIELDS = {"id", "statement", "evidence_maturity", "scope", "falsification_condition"}
-REQUIRED_RESULT_FIELDS = {"scenario", "configuration", "expected_behavior",
-                          "observed_behavior", "evidence_level", "limitations", "pass"}
-
-
-def repo_name() -> str:
-    return ROOT.name
+REQUIRED_RESULT_FIELDS = {
+    "scenario",
+    "configuration",
+    "expected_behavior",
+    "observed_behavior",
+    "evidence_level",
+    "limitations",
+    "pass",
+}
 
 
 def test_claims_ledger_schema():
@@ -43,20 +41,22 @@ def test_claims_ledger_schema():
 
 
 def test_no_unexpected_L3():
-    name = repo_name()
-    if name == "proofdiff-showcase":
-        return  # the single preregistered N=1 pilot is the documented exception
     claims = json.loads((ROOT / "evidence" / "claims.json").read_text(encoding="utf-8"))
     l3 = [c["id"] for c in claims["claims"] if c.get("evidence_maturity") == "L3"]
     assert not l3, f"unexpected L3 claims (no external validation in this repo): {l3}"
 
 
 def test_results_schema():
-    name = repo_name()
-    for rel, _ in RESULT_FILES.get(name, []):
-        payload = json.loads((ROOT / rel).read_text(encoding="utf-8"))
-        assert payload.get("results"), f"{rel}: empty results"
-        for r in payload["results"]:
+    assert RESULT_TARGETS, "RESULT_TARGETS must contain at least one target result file"
+    for rel, allow_l3 in RESULT_TARGETS:
+        target_path = ROOT / rel
+        assert target_path.is_file(), f"required result file missing: {rel}"
+        payload = json.loads(target_path.read_text(encoding="utf-8"))
+        results = payload.get("results")
+        assert results, f"{rel}: empty or missing results list"
+        for r in results:
             missing = REQUIRED_RESULT_FIELDS - set(r.keys())
             assert not missing, f"{r.get('scenario')}: missing {missing}"
+            if not allow_l3:
+                assert r.get("evidence_level") != "L3", f"{r.get('scenario')}: L3 evidence level not allowed"
         assert payload.get("all_pass") is True, f"{rel}: all_pass is not true"

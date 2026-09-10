@@ -42,6 +42,6 @@ AgentGuard’s boundary is the structured action: tool, resource, arguments, eff
 | IAM / workload identity | Who the caller is | Whether this exact refund was authorized |
 | Policy engines | Permission design | Cryptographic binding + replay at execute time |
 | Secret vaults | Long-term secret storage | Decision-scoped late use of those secrets |
-| AgentGuard | Authorized = bound = executed on protected paths | Host isolation, model alignment, provider honesty |
+| AgentGuard | Binds authorized intent to credential authority and admitted dispatch | Host isolation, model alignment, provider honesty |
 
 Do not read these as a numbered industry-standard stack. They are adjacent jobs. AgentGuard is the runtime action-integrity job.

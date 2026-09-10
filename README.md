@@ -20,9 +20,16 @@ An agent can produce a valid-looking action while:
 - previously approved actions are replayed,
 - external execution diverges from authorization.
 
-AgentGuard introduces a deterministic runtime authorization layer that enforces:
+AgentGuard demonstrates a deterministic execution-integrity boundary that binds authorized intent to bounded credential authority and admitted dispatch:
 
-**Authorized action = Credential-bound action = Executed action**
+```text
+Authorized Intent
+    -> Bounded Credential Authority
+    -> Admitted Dispatch
+    -> Evidence-Bound Outcome
+```
+
+The protected boundary verifies that the dispatched normalized action remains bound to the authorization decision. It does not independently prove the final provider-side business effect. The public reference kernel models this boundary for educational inspection; it does not prove current core behavior.
 
 ---
 
@@ -115,17 +122,16 @@ It must match:
 
 ## Execution-Time Verification
 
-On protected execution paths, AgentGuard verifies that:
+On protected execution paths, AgentGuard verifies that the dispatched normalized action matches the authorization decision:
 
 ```text
-Requested Action
-==
-Authorized Action
-==
-Executed Action
+Authorized Intent
+    -> Bounded Credential Authority
+    -> Admitted Dispatch
+    -> Evidence-Bound Outcome
 ```
 
-before dispatching external execution.
+before dispatching external execution. The protected boundary verifies that the dispatched normalized action remains bound to the authorization decision; it does not independently prove the final provider-side business effect.
 
 ---
 
@@ -143,17 +149,41 @@ On protected paths, AgentGuard can record verifiable evidence:
 - execution results
 - integrity metadata
 
-Core CLI commands include `evidence-build` and `evidence-verify`. This showcase does not treat evidence packaging as a separate attack demo.
+Core CLI commands include `evidence-build` and `evidence-verify`. This reference repository does not treat evidence packaging as a separate attack demo.
 
 ---
 
-# Attack Demonstrations
+# Public Reference Kernel
 
-These demonstrations are executable in this repository. Results come from AgentGuard `0.2.0rc3`, not from mocked PASS output.
+This repository contains a standalone, zero-dependency reference kernel located in [`reference-kernel/`](reference-kernel/):
+
+- **Role**: Pedagogical and bounded reference implementation of the execution-integrity invariant.
+- **Zero Dependencies**: Uses Python standard library only (`hashlib`, `hmac`, `json`, `threading`).
+- **Independently Runnable**: Run tests and adversarial experiments directly without requiring the AgentGuard core:
+  ```bash
+  make verify
+  # or directly:
+  python3 experiments/run_experiment.py
+  python3 -m pytest reference-kernel/tests/ -v
+  ```
+- **Evidence Maturity**: Public **L2 evidence** (publicly reproducible) in this repository applies strictly to this reference kernel.
+- **Bounded Scope**: Demonstrates post-authorization argument mutation rejection, in-memory single-use replay detection, credential ceiling domination, stale authorization expiry, privilege escalation blocking, and the prompt-injection boundary. It uses illustrative HMAC signing and an in-memory replay store; it is not the production core.
+
+See [`reference-kernel/README.md`](reference-kernel/README.md) and [`reference-kernel/docs/`](reference-kernel/docs/) for threat model, security invariants, attack taxonomy, and rejected designs.
+
+---
+
+# Core-Dependent Demonstration Harnesses
+
+The `demos/` directory contains demonstration harnesses that evaluate the full AgentGuard core implementation (`TensorScholar/agentguard`):
+
+- **Requirement**: Depends on a local sibling checkout or installed CLI of the AgentGuard core (`0.2.0rc3`).
+- **Boundary**: These harnesses exercise core components (SQLite persistent state, Ed25519 cryptography, MCP posture scanner). They do not make the reference kernel equivalent to the core.
+- **Historical Baseline**: Baseline evidence for these demonstrations remains pinned to historical core snapshot `8c3c69ea12e434e2223b7452654c23dece858d34` (`0.2.0rc3`).
 
 ## 1. Argument Mutation Attack
 
-[demo/refund-agent](demo/refund-agent)
+[demos/refund-agent](demos/refund-agent)
 
 A support agent is authorized to issue:
 
@@ -179,7 +209,7 @@ This is execution-authority verification. The demo does not contact a payment pr
 
 ## 2. Replay Attack
 
-[demo/replay-prevention](demo/replay-prevention)
+[demos/replay-prevention](demos/replay-prevention)
 
 A previously consumed decision receipt is presented again on the protected execution path.
 
@@ -195,7 +225,7 @@ decision_receipt.replayed
 
 ## 3. MCP Unmediated Route
 
-[demo/mcp-security](demo/mcp-security)
+[demos/mcp-security](demos/mcp-security)
 
 AgentGuard posture audits detect client configurations where tools can bypass a protected proxy, including a parallel direct route to the same downstream.
 
@@ -209,7 +239,7 @@ mcp.parallel_direct_bypass
 
 This audits supplied MCP configuration. It does not make arbitrary MCP servers invulnerable.
 
-Credential scope inflation (`credential.scope_exceeds_decision`) is validated in AgentGuard core (`agentguard demo`) and is not a separate showcase runner.
+Credential scope inflation (`credential.scope_exceeds_decision`) is validated in AgentGuard core (`agentguard demo`) and is not a separate demonstration runner in this repository.
 
 ---
 
@@ -252,17 +282,17 @@ See [docs/architecture.md](docs/architecture.md), [docs/threat-model.md](docs/th
 
 # Core Implementation
 
-The complete implementation is maintained in the primary repository (private):
+The complete implementation is maintained in the primary repository:
 
 - [AgentGuard Core Repository](https://github.com/TensorScholar/agentguard)
 
-This showcase is a **consumer** of that core. It does not vendor the engine.
+This reference repository provides demonstration harnesses that consume that core and an independent reference kernel that models its invariant. It does not vendor the core engine.
 
 ---
 
-# Demo
+# Running Demonstrations
 
-Requires a local AgentGuard install (sibling checkout or `AGENTGUARD`). PyPI `pip install agentguard` is not assumed.
+Requires a local AgentGuard core install (sibling checkout or `AGENTGUARD`). PyPI `pip install agentguard` is not assumed.
 
 ```bash
 ./scripts/bootstrap.sh --install   # optional, sibling core required
@@ -271,9 +301,9 @@ Requires a local AgentGuard install (sibling checkout or `AGENTGUARD`). PyPI `pi
 
 | Demo | Observable |
 |---|---|
-| [demo/refund-agent](demo/refund-agent) | `execution.arguments_digest_mismatch` |
-| [demo/replay-prevention](demo/replay-prevention) | `decision_receipt.replayed` |
-| [demo/mcp-security](demo/mcp-security) | MCP bypass reasons, non-zero exit |
+| [demos/refund-agent](demos/refund-agent) | `execution.arguments_digest_mismatch` |
+| [demos/replay-prevention](demos/replay-prevention) | `decision_receipt.replayed` |
+| [demos/mcp-security](demos/mcp-security) | MCP bypass reasons, non-zero exit |
 
 Setup and expected results: [docs/demo-guide.md](docs/demo-guide.md).
 
@@ -281,7 +311,7 @@ Setup and expected results: [docs/demo-guide.md](docs/demo-guide.md).
 
 # Project Status
 
-Engineering-validated against AgentGuard `0.2.0rc3`:
+Engineering-validated against AgentGuard core baseline `0.2.0rc3` (`8c3c69ea12e434e2223b7452654c23dece858d34`):
 
 - Runtime authorization
 - Credential binding

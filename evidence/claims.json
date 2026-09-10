@@ -10,29 +10,32 @@
       "statement": "Post-authorization argument mutation is rejected on the protected path with stable reason code execution.arguments_digest_mismatch.",
       "evidence_maturity": "L1",
       "public_reproducible_component": "L2 (reference kernel)",
-      "confidence": "high for reference kernel; medium for private core",
-      "scope": "Protected execution path; refund mutation demonstration; private core and reference kernel.",
+      "confidence": "high for reference kernel; medium for core baseline",
+      "scope": "Protected execution path; refund mutation demonstration; historical core baseline and reference kernel.",
       "reproduction": "cd reference-kernel && python experiments/run_experiment.py",
       "falsification_condition": "A mutated live intent reaches protected dispatch or is accepted without an arguments-digest mismatch.",
       "limitations": [
         "No live payment processor is contacted.",
         "Reference kernel uses illustrative HMAC and in-memory replay store."
       ],
-      "next_validation_step": "Independent operator runs the private-core demo under a recorded environment.",
+      "next_validation_step": "Independent operator runs the core demo under a recorded environment.",
       "sources": ["AG-S1", "AG-S2", "ref-kernel"]
     },
     {
       "id": "AG-SEC-002",
       "hero": true,
-      "statement": "A decision receipt consumed by protected execution cannot be reused on the same durable state boundary.",
+      "statement": "A decision receipt consumed by protected execution cannot be reused within the active consumption boundary.",
       "evidence_maturity": "L1",
       "public_reproducible_component": "L2 (reference kernel)",
-      "confidence": "high for in-memory kernel; medium for private SQLite path",
-      "scope": "Single-host durable state (SQLite in private core; in-memory in reference kernel).",
-      "reproduction": "pytest tests/test_replay_detection.py",
+      "confidence": "high for in-memory kernel; medium for core SQLite path",
+      "scope": "Single-host consumption boundary (durable SQLite consumption boundary in core; volatile in-memory replay store in reference kernel).",
+      "reproduction": "pytest reference-kernel/tests/test_replay_detection.py",
       "falsification_condition": "A second use of the same consumed receipt reaches the executor.",
-      "limitations": ["No distributed consensus claim.", "Process restart wipes the reference store."],
-      "next_validation_step": "Crash-recovery test of the private consumption store.",
+      "limitations": [
+        "No distributed consensus claim.",
+        "Reference kernel store is a volatile in-memory set wiped upon process restart, not durable storage."
+      ],
+      "next_validation_step": "Crash-recovery test of the core consumption store.",
       "sources": ["AG-S1", "AG-S2", "ref-kernel"]
     },
     {
@@ -43,7 +46,7 @@
       "public_reproducible_component": "none",
       "confidence": "medium",
       "scope": "Supplied MCP client configuration analyzed by mcp-posture.",
-      "reproduction": "private-core demo only",
+      "reproduction": "core demo only",
       "falsification_condition": "A known direct/parallel route is classified as protected or exits successfully under fail-on-bypass.",
       "limitations": ["Cannot discover hidden routes.", "Not in the public kernel."],
       "next_validation_step": "Publish a redacted configuration fixture for community reproduction.",
@@ -52,15 +55,19 @@
     {
       "id": "AG-ARCH-004",
       "hero": false,
-      "statement": "Ambiguous external effects are modeled as UNKNOWN and require reconciliation before retry by default.",
+      "statement": "Ambiguous external effects are modeled as UNKNOWN and require reconciliation before retry by default in historical core architecture.",
       "evidence_maturity": "L1",
       "public_reproducible_component": "none",
       "confidence": "medium-low as public evidence",
-      "scope": "Current private-core architecture at the source snapshot.",
-      "reproduction": "architecture review + private-core tests",
+      "scope": "Historical core baseline architecture pinned to source snapshot 8c3c69ea12e434e2223b7452654c23dece858d34.",
+      "reproduction": "architecture review + core tests at historical snapshot",
       "falsification_condition": "Default path retries an UNKNOWN effect without reconciliation.",
-      "limitations": ["Not demonstrated in the public kernel experiments in this snapshot."],
-      "next_validation_step": "Add an UNKNOWN/reconciliation fixture to the public kernel.",
+      "limitations": [
+        "Tied strictly to historical core snapshot 8c3c69ea12e434e2223b7452654c23dece858d34; does not validate current core main.",
+        "Subsequent core revisions (Q04-01 through Q04-05) introduced critical reconciliation and admission hardening (lock-safe dispatch admission, recovery containment, terminal exclusion, worker progress fairness, separate provider hashing) which are NOT validated by this historical evidence package.",
+        "Not demonstrated in the public reference kernel."
+      ],
+      "next_validation_step": "Add an UNKNOWN/reconciliation fixture to the public reference kernel.",
       "sources": ["AG-S1"]
     },
     {
@@ -73,7 +80,7 @@
       "scope": "Educational kernel only.",
       "reproduction": "python experiments/run_experiment.py (expect all_pass true)",
       "falsification_condition": "run_experiment.py exits non-zero on an unmodified kernel.",
-      "limitations": ["Does not prove private-core behavior."],
+      "limitations": ["Does not prove AgentGuard core behavior."],
       "next_validation_step": "Third-party CI running the same command.",
       "sources": ["ref-kernel"]
     }
